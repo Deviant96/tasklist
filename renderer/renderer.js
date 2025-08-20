@@ -28,7 +28,20 @@ function renderTasks() {
     els.taskList.innerHTML = '';
     tasks.forEach((task, index) => {
         const taskPriority = task.taskPriority || 'N/A';
+        const date = new Date(task.dueDate);
 
+        const options = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        };
+
+        const formattedDate = date.toLocaleString("en-US", options);
+        const taskDueDate = !isNaN(date.getTime()) ? formattedDate : '';
+        const taskRepeat = task.repeat === true ? '(Repeats)' : '';
         const taskStatus = task.taskStatus === 'in-progress' ? 'In Progress' :
                           task.taskStatus === 'done' ? 'Done' :
                             task.taskStatus === 'todo' ? 'To Do' : 'Unknown';
@@ -38,28 +51,28 @@ function renderTasks() {
         div.innerHTML = `
             <div class="task-main">
             <div class="task-content">
-                <strong>Task:</strong>
-                <strong>${task.title}</strong> (${taskPriority}) - ${taskStatus}
-                <br>Due: ${task.dueDate || 'No date'} ${task.repeat ? '(Repeats)' : ''}
+                <strong>${task.title}</strong> <span class="task-priority">(${taskPriority})</span> - <span class="task-status">${taskStatus}</span>
+                <br>
+                <span class="task-due-date">${taskDueDate}</span> ${taskRepeat}
             </div>
             <div class="task-actions" style="gap: 5px;">
-                <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" style="margin-left:8px">
-                <x-label>Delete</x-label>
+                <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" aria-label="Delete Task">
+                <img class="icon" src="./assets/trash_bin.png">
                 </x-button>
 
                 <x-button size="small" skin="recessed" onclick="addSubtask(${index})" class="btn-add-subtask">
-                <x-icon href="#add"></x-icon>
+                <img class="icon" src="./assets/plus.png">
                 <x-label>Subtask</x-label>
                 </x-button>
 
-                <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})">
-                <x-label>Complete</x-label>
+                <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})" aria-label="Mark task as complete">
+                <img class="icon" src="./assets/check.png">
                 </x-button>
             </div>
             </div>
             ${
             task.subtasks && task.subtasks.length > 0
-            ? `<x-accordion>
+            ? `<x-accordion class="subtasks">
                 <header>
                 <x-label>Subtasks</x-label>
                 </header>
@@ -80,7 +93,7 @@ els.addTaskButton.addEventListener('click', () => {
     const taskPriority = els.taskPriority.value;
     const taskStatus = els.taskStatus.value;
     const dueDate = els.dueDate.value;
-    const repeat = els.repeatTask.checked;
+    const repeat = els.repeatTask.ariaChecked === 'true' ? true : false;
 
     if(!title) return alert("Enter a task title!");
 
@@ -105,7 +118,7 @@ els.taskTitle.addEventListener('keypress', (e) => {
         const taskPriority = els.taskPriority.value;
         const taskStatus = els.taskStatus.value;
         const dueDate = els.dueDate.value;
-        const repeat = els.repeatTask.checked;
+        const repeat = els.repeatTask.ariaChecked === 'true' ? true : false;
 
         if(!title) return alert("Enter a task title!");
 

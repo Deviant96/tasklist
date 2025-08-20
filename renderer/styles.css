@@ -10,6 +10,12 @@ body {
   background-color: #d4edd5;
 }
 
+@media screen and (max-width: 600px) {
+  #app {
+    padding: 12px;
+  }
+}
+
 input,
 select {
   padding: 5px;
@@ -219,7 +225,7 @@ x-button[skin="recessed"][size="small"] {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .filters {
@@ -244,4 +250,75 @@ x-card.task {
 }
 x-card.task:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+img.icon {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media screen and (max-width: 420px) {
+  img.icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .add-task {
+    flex-direction: column;
+  }
+  .add-task > * {
+    width: 100%;
+    flex: none;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: center;
+  }
+  .filters > * {
+    width: 100%;
+    flex: none;
+  }
+
+  x-card.task {
+    padding: 8px;
+  }
+
+  .task-content {
+    font-size: 0.8em;
+  }
+
+  .task-due-date {
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  .task-main {
+    flex-direction: column;
+  }
+  .task-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .btn-add-subtask {
+    display: flex;
+  }
+  .subtasks {
+    font-size: 0.725em;
+    margin-top: 10px;
+    margin-bottom: 2px;
+  }
+  .subtasks header x-label {
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .subtasks header x-label:hover {
+    color: #4CAF50;
+  }
+
 }
