@@ -10,7 +10,13 @@ function loadTasks() {
 }
 
 function saveTasks(tasks) {
-    fs.writeFileSync(dataFilePath, JSON.stringify(tasks, null, 2));
+    try {
+        fs.writeFileSync(dataFilePath, JSON.stringify(tasks, null, 2));
+        return true;
+    } catch (err) {
+        console.error('Error saving tasks:', err);
+        return false;
+    }
 }
 
 function createWindow() {

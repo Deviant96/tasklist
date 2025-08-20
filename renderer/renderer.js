@@ -10,7 +10,8 @@ const els = {
     dueDate: document.getElementById('dueDate'),
     repeatTask: document.getElementById('repeatTask'),
     taskList: document.getElementById('taskList'),
-    addTaskButton: document.getElementById('addTaskBtn')
+    addTaskButton: document.getElementById('addTaskBtn'),
+    notification: document.getElementById('notification'),
 }
 
 async function load() {
@@ -18,10 +19,8 @@ async function load() {
     renderTasks();
 }
 
-function save() {
-    console.log("Saving tasks...");
-    console.log(tasks);
-    window.api.saveTasks(tasks);
+async function save() {
+    await window.api.saveTasks(tasks);
 }
 
 function renderTasks() {
@@ -87,54 +86,45 @@ function renderTasks() {
     });
 }
 
-els.addTaskButton.addEventListener('click', () => {
-    console.log("Adding task...");
-    const title = els.taskTitle.value;
-    const taskPriority = els.taskPriority.value;
-    const taskStatus = els.taskStatus.value;
-    const dueDate = els.dueDate.value;
-    const repeat = els.repeatTask.ariaChecked === 'true' ? true : false;
+function getTaskInput() {
+    return {
+        title: els.taskTitle.value.trim(),
+        taskPriority: els.taskPriority.value,
+        taskStatus: els.taskStatus.value,
+        dueDate: els.dueDate.value,
+        repeat: els.repeatTask.ariaChecked === 'true',
+        subtasks: []
+    };
+}
 
-    if(!title) return alert("Enter a task title!");
-
-    const task = { title, taskPriority, taskStatus, dueDate, repeat, subtasks: [] };
+function addTask() {
+    const task = getTaskInput();
+    if (!task.title) {
+        els.notification.opened = true;
+        els.notification.innerText = "Task title cannot be empty!";
+        return;
+    }
     tasks.push(task);
 
-    if (dueDate) {
-        const dueTime = new Date(dueDate).getTime() - Date.now();
+    if (task.dueDate) {
+        const dueTime = new Date(task.dueDate).getTime() - Date.now();
         if (dueTime > 0) {
             // setTimeout(() => ipcRenderer.send('show-reminder', task), dueTime);
         }
     }
+    els.notification.opened = true;
+    els.notification.innerText = "Task added successfully!";
 
     save();
     renderTasks();
-});
+}
+
+els.addTaskButton.addEventListener('click', addTask);
 
 els.taskTitle.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        console.log("Enter pressed, adding task...");
-        const title = els.taskTitle.value;
-        const taskPriority = els.taskPriority.value;
-        const taskStatus = els.taskStatus.value;
-        const dueDate = els.dueDate.value;
-        const repeat = els.repeatTask.ariaChecked === 'true' ? true : false;
-
-        if(!title) return alert("Enter a task title!");
-
-        const task = { title, taskPriority, taskStatus, dueDate, repeat, subtasks: [] };
-        tasks.push(task);
-
-        if (dueDate) {
-            const dueTime = new Date(dueDate).getTime() - Date.now();
-            if (dueTime > 0) {
-                // setTimeout(() => ipcRenderer.send('show-reminder', task), dueTime);
-            }
-        }
+        addTask();
     }
-
-    save();
-    renderTasks();
 });
 
 function addSubtask(index) {
@@ -167,15 +157,25 @@ function addSubtask(index) {
 }
 
 function markComplete(index) {
-    tasks[index].status = "Completed";
-    save();
-    renderTasks();
+    els.notification.opened = true;
+    if (tasks[index].status = "Completed") {
+        els.notification.innerText = "Task marked as complete!";
+        save();
+        renderTasks();
+    } else {
+        els.notification.innerText = "Error completing task!";
+    }
 }
 
 function deleteTask(index) {
-    tasks.splice(index, 1);
-    save();
-    renderTasks();
+    els.notification.opened = true;
+    if (tasks.splice(index, 1)) {
+        els.notification.innerText = "Task removed!";
+        save();
+        renderTasks();
+    } else {
+        els.notification.innerText = "Error removing task!";
+    }
 }
 
 function prompt(options) {
