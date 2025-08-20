@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Todo List</title>
+    <link rel="stylesheet" href="styles.css" />
+
+    <script src="../node_modules/xel/xel.js" type="module"></script>
+    <meta name="xel-theme" content="../node_modules/xel/themes/fluent.css">
+    <meta name="xel-accent-color" content="#ae8fbb">
+    <meta name="xel-icons" content="../node_modules/xel/icons/material.svg">
+</head>
+<body>
+    <div id="app">
+        <header>
+        </header>
+
+        <main>
+            <section class="add-task">
+                <x-input id="taskTitle" size="small">
+                    <x-label>Task Title</x-label>
+                </x-input>
+                <x-select size="small" id="taskPriority">
+                    <x-menu>
+                        <x-menuitem value="low" toggled>
+                        <x-label>Low</x-label>
+                        </x-menuitem>
+
+                        <x-menuitem value="medium">
+                        <x-label>Medium</x-label>
+                        </x-menuitem>
+
+                        <x-menuitem value="high">
+                        <x-label>High</x-label>
+                        </x-menuitem>
+                    </x-menu>
+                </x-select>
+                <x-select size="small" id="taskStatus">
+                    <x-menu>
+                        <x-menuitem value="todo" toggled>
+                            <x-label>To Do</x-label>
+                        </x-menuitem>
+                        <x-menuitem value="in-progress">
+                            <x-label>In Progress</x-label>
+                        </x-menuitem>
+                        <x-menuitem value="done">
+                            <x-label>Done</x-label>
+                        </x-menuitem>
+                    </x-menu>
+                </x-select>
+                <x-input type="datetime-local" id="dueDate" size="small" class="calendar">
+                </x-input>
+                <x-switch id="repeatTask">
+                    <x-label><strong>Repeat?</strong></x-label>
+                </x-switch>
+                <x-button id="addTaskBtn" class="btn-add-task" size="small">
+                    <x-label>Add Task</x-label>
+                </x-button>
+            </section>
+
+            <section class="tasks">
+                <div class="filters">
+                    <x-input  class="search-bar" id="search" size="small">
+                        <x-icon href="#search"></x-icon>
+                        <x-label>Search tasks...</x-label>
+                    </x-input>
+                    <x-select size="small" id="filterPriority">
+                        <x-menu>
+                            <x-menuitem value="" disabled toggled>
+                            <x-label>Select priority</x-label>
+                            </x-menuitem>
+
+                            <x-menuitem value="all">
+                            <x-label>All</x-label>
+                            </x-menuitem>
+
+                            <x-menuitem value="low">
+                            <x-label>Low</x-label>
+                            </x-menuitem>
+
+                            <x-menuitem value="medium">
+                            <x-label>Medium</x-label>
+                            </x-menuitem>
+
+                            <x-menuitem value="high">
+                            <x-label>High</x-label>
+                            </x-menuitem>
+                        </x-menu>
+                    </x-select>
+                    <x-select size="small" id="filterStatus">
+                        <x-menu>
+                            <x-menuitem value="" disabled toggled>
+                                <x-label>Select status</x-label>
+                            </x-menuitem>
+                            <x-menuitem value="all">
+                                <x-label>All</x-label>
+                            </x-menuitem>
+                            <x-menuitem value="todo">
+                                <x-label>To Do</x-label>
+                            </x-menuitem>
+                            <x-menuitem value="in-progress">
+                                <x-label>In Progress</x-label>
+                            </x-menuitem>
+                            <x-menuitem value="done">
+                                <x-label>Done</x-label>
+                            </x-menuitem>
+                        </x-menu>
+                    </x-select>
+                </div>
+                
+                <ul id="taskList" class="task-list"></ul>
+            </section>
+        </main>
+
+        <footer>
+            <small>Contact mcrealdeviant@gmail.com</small>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
