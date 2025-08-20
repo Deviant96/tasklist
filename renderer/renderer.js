@@ -50,34 +50,41 @@ function renderTasks() {
         div.innerHTML = `
             <div class="task-main">
             <div class="task-content">
-                <strong>${task.title}</strong> <span class="task-priority">(${taskPriority})</span> - <span class="task-status">${taskStatus}</span>
-                <br>
-                <span class="task-due-date">${taskDueDate}</span> ${taskRepeat}
+            <strong>${task.title}</strong> <span class="task-priority">(${taskPriority})</span> - <span class="task-status">${taskStatus}</span>
+            <br>
+            <span class="task-due-date">${taskDueDate}</span> ${taskRepeat}
             </div>
             <div class="task-actions" style="gap: 5px;">
-                <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" aria-label="Delete Task">
-                <img class="icon" src="./assets/trash_bin.png">
-                </x-button>
+            <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" aria-label="Delete Task">
+            <img class="icon" src="./assets/trash_bin.png">
+            </x-button>
 
-                <x-button size="small" skin="recessed" onclick="addSubtask(${index})" class="btn-add-subtask">
-                <img class="icon" src="./assets/plus.png">
-                <x-label>Subtask</x-label>
-                </x-button>
+            <x-button size="small" skin="recessed" onclick="addSubtask(${index})" class="btn-add-subtask">
+            <img class="icon" src="./assets/plus.png">
+            <x-label>Subtask</x-label>
+            </x-button>
 
-                <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})" aria-label="Mark task as complete">
-                <img class="icon" src="./assets/check.png">
-                </x-button>
+            <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})" aria-label="Mark task as complete">
+            <img class="icon" src="./assets/check.png">
+            </x-button>
             </div>
             </div>
             ${
             task.subtasks && task.subtasks.length > 0
             ? `<x-accordion class="subtasks">
-                <header>
-                <x-label>Subtasks</x-label>
-                </header>
-                <div>
-                ${task.subtasks.map(s => `<div class="subtask">- ${s}</div>`).join('')}
+            <header>
+            <x-label>Subtasks</x-label>
+            </header>
+            <div>
+            ${task.subtasks.map((s, subIndex) => `
+                <div class="subtask">
+                - ${s}
+                <x-button size="small" skin="recessed" class="btn-remove-subtask" onclick="removeSubtask(${index}, ${subIndex})" aria-label="Remove Subtask">
+                    <img class="icon" src="./assets/trash_bin.png">
+                </x-button>
                 </div>
+            `).join('')}
+            </div>
             </x-accordion>`
             : ''
             }
@@ -154,6 +161,23 @@ function addSubtask(index) {
         }
     })
     .catch(console.error);
+}
+
+function removeSubtask(taskIndex, subtaskIndex) {
+    if (
+        tasks[taskIndex] &&
+        Array.isArray(tasks[taskIndex].subtasks) &&
+        tasks[taskIndex].subtasks[subtaskIndex] !== undefined
+    ) {
+        tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
+        els.notification.opened = true;
+        els.notification.innerText = "Subtask removed!";
+        save();
+        renderTasks();
+    } else {
+        els.notification.opened = true;
+        els.notification.innerText = "Error removing subtask!";
+    }
 }
 
 function markComplete(index) {
