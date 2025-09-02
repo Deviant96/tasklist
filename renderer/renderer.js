@@ -100,7 +100,9 @@ function getTaskInput() {
         taskStatus: els.taskStatus.value,
         dueDate: els.dueDate.value,
         repeat: els.repeatTask.ariaChecked === 'true',
-        subtasks: []
+        subtasks: [],
+        createdDate: null,
+        updatedDate: null,
     };
 }
 
@@ -119,6 +121,10 @@ function addTask() {
             // setTimeout(() => ipcRenderer.send('show-reminder', task), dueTime);
         }
     }
+
+    task.createdDate = new Date().toISOString();
+    task.updatedDate = new Date().toISOString();
+
     els.notification.opened = true;
     els.notification.innerText = "Task added successfully!";
 
