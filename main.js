@@ -29,6 +29,7 @@ function createWindow() {
             contextIsolation: true
         },
         autoHideMenuBar: true,
+        icon: path.join(__dirname, 'renderer/assets/app_icon.png') // Update this path
     });
 
     // Load dev tools if in development
