@@ -141,7 +141,8 @@ function addSubtask(index) {
         label: 'Subtask Title:',
         value: '',
         type: 'input',
-        index: index
+        index: index,
+        autofocus: true
     })
     .then((r) => {
         console.log("Subtask input received:", r);
@@ -210,12 +211,15 @@ function prompt(options) {
                 existingDialog.parentNode.removeChild(existingDialog);
             }
         }
-        const { title, label, value, type, index } = options;
+        const { title, label, value, type, index, autofocus } = options;
         const input = document.createElement('input');
         const taskDiv = els.taskList.children[index];
         input.type = type || 'text';
         input.value = value || '';
         input.placeholder = label;
+        if (autofocus) {
+            input.autofocus = true;
+        }
 
         const dialog = document.createElement('div');
         dialog.className = 'prompt-dialog';
