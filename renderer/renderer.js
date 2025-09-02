@@ -25,6 +25,7 @@ async function save() {
 
 function renderTasks() {
     els.taskList.innerHTML = '';
+    tasks.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
     tasks.forEach((task, index) => {
         const taskPriority = task.taskPriority || 'N/A';
         const date = new Date(task.dueDate);
