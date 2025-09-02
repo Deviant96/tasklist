@@ -28,6 +28,22 @@ select {
 .subtask {
   margin-left: 20px;
   font-size: 0.9em;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-start;
+  align-items: center;
+}
+.subtask .btn-remove-subtask {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.subtask .btn-remove-subtask:hover {
+  background-color: transparent;
+}
+.subtask .btn-remove-subtask img {
+  height: 12px;
+  width: 12px;
 }
 .calendar {
   margin: 5px 0;
@@ -257,6 +273,12 @@ img.icon {
   border: none;
   padding: 0;
   margin: 0;
+}
+
+@media screen and (max-height: 500px) {
+  .add-task {
+    display: none;
+  }
 }
 
 @media screen and (max-width: 420px) {
