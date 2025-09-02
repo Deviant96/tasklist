@@ -198,15 +198,27 @@ function markComplete(index) {
     }
 }
 
+/*
+ * Delete a task by showing a confirmation dialog
+ */
 function deleteTask(index) {
-    els.notification.opened = true;
-    if (tasks.splice(index, 1)) {
-        els.notification.innerText = "Task removed!";
-        save();
-        renderTasks();
-    } else {
-        els.notification.innerText = "Error removing task!";
-    }
+    prompt({
+        title: 'Confirm Deletion',
+        label: 'Are you sure you want to delete this task?',
+        type: 'confirm',
+        index: index
+    })
+    .then((confirmed) => {
+        if (confirmed) {
+            els.notification.opened = true;
+            if (tasks.splice(index, 1)) {
+                els.notification.innerText = "Task removed!";
+                save();
+                renderTasks();
+            }
+        }
+    })
+    .catch(console.error);
 }
 
 function prompt(options) {
@@ -218,24 +230,36 @@ function prompt(options) {
             }
         }
         const { title, label, value, type, index, autofocus } = options;
-        const input = document.createElement('input');
         const taskDiv = els.taskList.children[index];
-        input.type = type || 'text';
-        input.value = value || '';
-        input.placeholder = label;
-        if (autofocus) {
-            input.autofocus = true;
-        }
-
+        
         const dialog = document.createElement('div');
         dialog.className = 'prompt-dialog';
         dialog.innerHTML = `<h3>${title}</h3>`;
-        dialog.appendChild(input);
+
+        if (type === 'confirm') {
+            const message = document.createElement('p');
+            message.textContent = label;
+            dialog.appendChild(message);
+        } else {
+            const input = document.createElement('input');
+            input.type = type || 'text';
+            input.value = value || '';
+            input.placeholder = label;
+            if (autofocus) {
+                input.autofocus = true;
+            }
+            dialog.appendChild(input);
+        }
+
 
         const okButton = document.createElement('button');
         okButton.textContent = 'OK';
         okButton.onclick = () => {
-            resolve(input.value);
+            if (type === 'confirm') {
+                resolve(true);
+            } else {
+                resolve(input.value);
+            }
             if (taskDiv) {
                 taskDiv.removeChild(dialog);
             } else {
