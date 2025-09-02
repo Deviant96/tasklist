@@ -1,13 +1,33 @@
 {
     "name": "tasklist",
     "version": "1.0.0",
+    "author": "Primes",
+    "description": "TODO app with JSON storage, subtasks, and more.",
     "main": "main.js",
     "scripts": {
-        "start": "electron  ."
+        "start": "electron  .",
+        "build": "electron-builder"
+    },
+    "build": {
+        "appId": "com.miretazam.tasklist",
+        "productName": "TaskList",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "**/*"
+        ],
+        "win": {
+            "target": "nsis",
+            "icon": "renderer/assets/app_icon.png"
+        }
     },
     "dependencies": {
         "custom-electron-prompt": "^1.5.8",
-        "electron": "^31.0.0",
         "xel": "^0.36.2"
+    },
+    "devDependencies": {
+        "electron-builder": "^26.0.12",
+        "electron": "^31.0.0"
     }
 }
