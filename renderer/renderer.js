@@ -1,7 +1,9 @@
+const { schedule, formatDate, toJSDate } = window.api;
+
 let tasks = [];
+let scheduledJobs = {};
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-
 
 const els = {
     taskTitle: document.getElementById('taskTitle'),
@@ -14,8 +16,62 @@ const els = {
     notification: document.getElementById('notification'),
 }
 
+async function scheduleReminder(task) {
+    if (!task.dueDate || task.taskStatus === 'completed') return;
+
+    const dueDate = window.api.formatDate(task.dueDate, "local");
+    const now = window.api.formatDate(Date.now(), "ff");
+
+    if (dueDate < now) {
+        console.log(`Due date for task '${task.title}' has already passed.`);
+        els.notification.opened = true;
+        els.notification.innerText = `Reminder skipped: '${task.title}' is overdue.`;
+        return;
+    }
+
+    try {
+        const success = await window.api.scheduleReminder(task, task.dueDate);
+        console.log("Scheduling result:", success);
+        if (success) {
+            console.log(`Reminder scheduled for task: ${task.title} at ${task.dueDate}`);
+        } else {
+            console.error(`Failed to schedule reminder for task: ${task.title}`);
+        }
+    } catch (err) {
+        console.error("Error scheduling reminder:", err);
+    }
+}
+
+
+function cancelScheduledReminder(taskId) {
+    if (scheduledJobs[taskId]) {
+        scheduledJobs[taskId].cancel();
+        delete scheduledJobs[taskId];
+    }
+}
+
+function computeNextDue(task) {
+    if (!task.dueDate) return null;
+    const date = DateTime.fromISO(task.dueDate, { zone: 'local' });
+
+    if (task.repeat === 'daily') {
+        return date.plus({ days: 1 });
+    }
+
+    if (task.repeat === 'weekly') {
+        return date.plus({ weeks: 1 });
+    }
+
+    if (task.repeat === 'monthly') {
+        return date.plus({ months: 1 });
+    }
+
+    return null;
+}
+
 async function load() {
     tasks = await window.api.loadTasks();
+    tasks.forEach(scheduleReminder);
     renderTasks();
 }
 
@@ -51,6 +107,7 @@ function renderTasks() {
         div.innerHTML = `
             <div class="task-main">
             <div class="task-content">
+            <span id="task-id" style="display:none;">${task.id}</span>
             <strong>${task.title}</strong> <span class="task-priority">(${taskPriority})</span> - <span class="task-status">${taskStatus}</span>
             <br>
             <span class="task-due-date">${taskDueDate}</span> ${taskRepeat}
@@ -96,6 +153,7 @@ function renderTasks() {
 
 function getTaskInput() {
     return {
+        id: uid(),
         title: els.taskTitle.value.trim(),
         taskPriority: els.taskPriority.value,
         taskStatus: els.taskStatus.value,
@@ -116,12 +174,7 @@ function addTask() {
     }
     tasks.push(task);
 
-    if (task.dueDate) {
-        const dueTime = new Date(task.dueDate).getTime() - Date.now();
-        if (dueTime > 0) {
-            // setTimeout(() => ipcRenderer.send('show-reminder', task), dueTime);
-        }
-    }
+    scheduleReminder(task);
 
     task.createdDate = new Date().toISOString();
     task.updatedDate = new Date().toISOString();

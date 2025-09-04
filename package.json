@@ -24,10 +24,12 @@
     },
     "dependencies": {
         "custom-electron-prompt": "^1.5.8",
+        "luxon": "^3.7.1",
+        "node-schedule": "^2.1.1",
         "xel": "^0.36.2"
     },
     "devDependencies": {
-        "electron-builder": "^26.0.12",
-        "electron": "^31.0.0"
+        "electron": "^38.0.0",
+        "electron-builder": "^26.0.12"
     }
 }

@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const schedule = require('node-schedule');
+const { DateTime } = require('luxon');
 
 const dataFilePath = path.join(__dirname, 'tasks.json');
 
@@ -44,6 +46,35 @@ app.whenReady().then(() => {
 
     ipcMain.handle('get-tasks', () => loadTasks());
     ipcMain.handle('save-tasks', (_, tasks)  => { saveTasks(tasks); return true });
+    ipcMain.handle('notify', (_, { title, body }) => {
+        if (Notification.isSupported()) new Notification({ title, body }).show();
+        return true;
+    });
+    ipcMain.handle('format-date', (_, iso, zone = 'local') => {
+        return DateTime.fromISO(iso, { zone: zone });
+    });
+    ipcMain.handle('to-js-date', (_, isoString) => {
+        return DateTime.fromISO(isoString).toJSDate();
+    });
+
+    ipcMain.handle('schedule-reminder', (_, task, dueDateIso) => {
+        const dueDate = DateTime.fromISO(dueDateIso, { zone: 'local' }).toJSDate();
+        if (isNaN(dueDate.getTime()) || dueDate < new Date()) {
+            console.error("Invalid or past due date:", dueDateIso);
+            return false;
+        }
+
+        const job = schedule.scheduleJob(dueDate, () => {
+            if (Notification.isSupported()) {
+                new Notification({
+                    title: `Task due: ${task.title}`,
+                    body: `Priority: ${task.taskPriority || 'N/A'}`
+                }).show();
+            }
+        });
+
+        return !!job;
+    });
 });
 
 ipcMain.on('show-reminder', (_, task) => {
