@@ -198,6 +198,11 @@ x-button[skin="recessed"][size="small"] {
   justify-content: space-between;
 }
 
+.task-content.completed {
+    text-decoration: line-through;
+    color: rgba(0, 0, 0, 0.2);
+}
+
 .btn-add-subtask {
   background-color: #4CAF50;
   color: white;

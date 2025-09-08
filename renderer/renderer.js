@@ -99,52 +99,59 @@ function renderTasks() {
         const taskDueDate = !isNaN(date.getTime()) ? formattedDate : '';
         const taskRepeat = task.repeat === true ? '(Repeats)' : '';
         const taskStatus = task.taskStatus === 'in-progress' ? 'In Progress' :
-                          task.taskStatus === 'done' ? 'Done' :
+                          task.taskStatus === 'completed' ? 'Done' :
                             task.taskStatus === 'todo' ? 'To Do' : 'Unknown';
 
         const div = document.createElement('x-card');
         div.className = 'task';
         div.innerHTML = `
             <div class="task-main">
-            <div class="task-content">
-            <span id="task-id" style="display:none;">${task.id}</span>
-            <strong>${task.title}</strong> <span class="task-priority">(${taskPriority})</span> - <span class="task-status">${taskStatus}</span>
-            <br>
-            <span class="task-due-date">${taskDueDate}</span> ${taskRepeat}
-            </div>
-            <div class="task-actions" style="gap: 5px;">
-            <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" aria-label="Delete Task">
-            <img class="icon" src="./assets/trash_bin.png">
-            </x-button>
+                <div class="task-content ${task.taskStatus === 'completed' ? 'completed' : ''}">
+                    <span id="task-id" style="display:none;">${task.id}</span>
+                    <strong>${task.title}</strong> <span class="task-priority">(${taskPriority})</span> - <span class="task-status">${taskStatus}</span>
+                    <br>
+                    <span class="task-due-date">${taskDueDate}</span> ${taskRepeat}
+                </div>
+                <div class="task-actions" style="gap: 5px;">
+                    ${task.taskStatus !== 'completed' ? `
+                    <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" aria-label="Delete Task">
+                        <img class="icon" src="./assets/trash_bin.png">
+                    </x-button>
 
-            <x-button size="small" skin="recessed" onclick="addSubtask(${index})" class="btn-add-subtask">
-            <img class="icon" src="./assets/plus.png">
-            <x-label>Subtask</x-label>
-            </x-button>
+                    <x-button size="small" skin="recessed" onclick="addSubtask(${index})" class="btn-add-subtask">
+                        <img class="icon" src="./assets/plus.png">
+                        <x-label>Subtask</x-label>
+                    </x-button>
 
-            <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})" aria-label="Mark task as complete">
-            <img class="icon" src="./assets/check.png">
-            </x-button>
-            </div>
+                    <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})" aria-label="Mark task as complete">
+                        <img class="icon" src="./assets/check.png">
+                    </x-button>
+                    ` : `
+                    <x-button class="btn-complete-revert-complete" size="small" skin="recessed" onclick="markUncomplete(${index})" aria-label="Revert task as uncomplete">
+                        <img class="icon" src="./assets/revert.png">
+                    </x-button>
+                    `}
+                </div>
             </div>
             ${
             task.subtasks && task.subtasks.length > 0
-            ? `<x-accordion class="subtasks">
-            <header>
-            <x-label>Subtasks</x-label>
-            </header>
-            <div>
-            ${task.subtasks.map((s, subIndex) => `
-                <div class="subtask">
-                - ${s}
-                <x-button size="small" skin="recessed" class="btn-remove-subtask" onclick="removeSubtask(${index}, ${subIndex})" aria-label="Remove Subtask">
-                    <img class="icon" src="./assets/trash_bin.png">
-                </x-button>
+            ? `
+            <x-accordion class="subtasks">
+                <header>
+                    <x-label>Subtasks</x-label>
+                </header>
+                <div>
+                    ${task.subtasks.map((s, subIndex) => `
+                        <div class="subtask">
+                        - ${s}
+                        <x-button size="small" skin="recessed" class="btn-remove-subtask" onclick="removeSubtask(${index}, ${subIndex})" aria-label="Remove Subtask">
+                            <img class="icon" src="./assets/trash_bin.png">
+                        </x-button>
+                        </div>
+                    `).join('')}
                 </div>
-            `).join('')}
-            </div>
-            </x-accordion>`
-            : ''
+            </x-accordion>
+            ` : ''
             }
             `;
             els.taskList.appendChild(div);
@@ -242,13 +249,27 @@ function removeSubtask(taskIndex, subtaskIndex) {
 }
 
 function markComplete(index) {
+    tasks[index].taskStatus = 'completed';
     els.notification.opened = true;
-    if (tasks[index].status = "Completed") {
+    if (tasks[index].taskStatus === "completed") {
         els.notification.innerText = "Task marked as complete!";
         save();
         renderTasks();
+        cancelScheduledReminder(tasks[index].id);
     } else {
         els.notification.innerText = "Error completing task!";
+    }
+}
+
+function markUncomplete(index) {
+    tasks[index].taskStatus = 'in-progress';
+    els.notification.opened = true;
+    if (tasks[index].taskStatus === "in-progress") {
+        els.notification.innerText = "Task marked as uncomplete!";
+        save();
+        renderTasks();
+    } else {
+        els.notification.innerText = "Error uncompleting task!";
     }
 }
 
