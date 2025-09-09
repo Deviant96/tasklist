@@ -295,6 +295,10 @@ img.icon {
   .add-task {
     flex-direction: row;
   }
+  .add-task > * {
+    width: 100%;
+    flex: none;
+  }
   .add-task .task-title {
     flex: 1 1 0;
     width: 100%;
@@ -312,10 +316,6 @@ img.icon {
   .add-task .repeat-task {
     flex: 0 0 30vw;
     /* width: 100%; */
-  }
-  .add-task > * {
-    width: 100%;
-    flex: none;
   }
 
   .filters {
