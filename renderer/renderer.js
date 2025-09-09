@@ -14,6 +14,9 @@ const els = {
     taskList: document.getElementById('taskList'),
     addTaskButton: document.getElementById('addTaskBtn'),
     notification: document.getElementById('notification'),
+    searchBar: document.getElementById('search'),
+    filterStatus: document.getElementById('filterStatus'),
+    filterPriority: document.getElementById('filterPriority'),
 }
 
 async function scheduleReminder(task) {
@@ -81,8 +84,12 @@ async function save() {
 
 function renderTasks() {
     els.taskList.innerHTML = '';
-    tasks.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-    tasks.forEach((task, index) => {
+    const filtered = filterAndSearch(tasks);
+
+    if (filtered.length === 0) els.taskList.innerHTML = '<p>No task found</p>'
+
+    filtered.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    filtered.forEach((task, index) => {
         const taskPriority = task.taskPriority || 'N/A';
         const date = new Date(task.dueDate);
 
@@ -363,5 +370,34 @@ function prompt(options) {
         }
     });
 }
+
+function filterAndSearch(tasks) {
+    const query = els.searchBar && els.searchBar.value ? els.searchBar.value.trim().toLowerCase() : '';
+    const statusFilter = els.filterStatus.value || 'all';
+    const priorityFilter = els.filterPriority.value || 'all';
+
+    function matchesFilter(task) {
+        const matchesStatus = statusFilter === 'all' || task.taskStatus === statusFilter;
+        const matchesPriority = priorityFilter === 'all' || task.taskPriority === priorityFilter;
+        const matchesQuery = !query || (task.title + ' ' + (task.description || '')).toLowerCase().includes(query);
+
+        return matchesStatus && matchesPriority && matchesQuery;
+    }
+
+    function filterTasks(taskList) {
+        return taskList
+            .map(task => ({
+                ...task,
+                subtasks: task.subtasks ? filterTasks(task.subtasks) : []
+            }))
+            .filter(task => matchesFilter(task) || (task.subtasks && task.subtasks.length > 0));
+    }
+
+    return filterTasks(tasks);
+}
+
+els.searchBar.addEventListener('input', renderTasks);
+els.filterStatus.addEventListener('change', renderTasks);
+els.filterPriority.addEventListener('change', renderTasks);
 
 load();
