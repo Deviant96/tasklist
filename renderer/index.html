@@ -19,10 +19,10 @@
 
         <main>
             <section class="add-task">
-                <x-input id="taskTitle" size="small">
+                <x-input id="taskTitle" class="task-title" size="small">
                     <x-label>Task Title</x-label>
                 </x-input>
-                <x-select size="small" id="taskPriority">
+                <x-select size="small" id="taskPriority" class="task-priority">
                     <x-menu>
                         <x-menuitem value="low" toggled>
                         <x-label>Low</x-label>
@@ -37,7 +37,7 @@
                         </x-menuitem>
                     </x-menu>
                 </x-select>
-                <x-select size="small" id="taskStatus">
+                <x-select size="small" id="taskStatus" class="task-status">
                     <x-menu>
                         <x-menuitem value="todo" toggled>
                             <x-label>To Do</x-label>
@@ -50,9 +50,9 @@
                         </x-menuitem>
                     </x-menu>
                 </x-select>
-                <x-input type="datetime-local" id="dueDate" size="small" class="calendar">
+                <x-input type="datetime-local" id="dueDate" class="due-date" size="small" class="calendar">
                 </x-input>
-                <x-switch id="repeatTask">
+                <x-switch id="repeatTask" class="repeat-task">
                     <x-label><strong>Repeat?</strong></x-label>
                 </x-switch>
                 <x-button id="addTaskBtn" class="btn-add-task" size="small">
