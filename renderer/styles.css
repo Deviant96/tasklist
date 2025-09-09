@@ -280,6 +280,22 @@ img.icon {
   margin: 0;
 }
 
+#quote-text {
+  text-align: left;
+  margin-top: 20px;
+  font-style: italic;
+  color: #555;
+  font-size: 12px;
+}
+#quote-author {
+  text-align: left;
+  margin-top: 2px;
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+
 @media screen and (max-height: 500px) {
   .add-task {
     display: none;
@@ -377,4 +393,13 @@ img.icon {
     color: #4CAF50;
   }
 
+  #quote-text {
+    display: inline-block;
+    font-size: 10px;
+    line-height: 1.2em;
+  }
+  #quote-author {
+    margin-top: 0;
+    font-size: 12px;
+  }
 }

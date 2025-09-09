@@ -115,12 +115,32 @@
         </main>
 
         <footer>
-            <small>Contact mcrealdeviant@gmail.com</small>
+            <small id="quote-text">Loading quote...</small>
+            <div id="quote-author"></div>
         </footer>
     </div>
 
     <x-notification id="notification" timeout="2500"></x-notification>
     
     <script src="renderer.js"></script>
+    <script>
+        async function fetchQuote() {
+            try {
+                const response = await fetch('http://api.quotable.io/random?tags=productivity|motivation|inspiration|success|failure|discipline|focus|perseverance|timemanagement|leadership|teamwork|creativity|responsibility|achievement|resilience|mindset|growth|ambition|purpose|hardwork|determination|efficiency|balance|wisdom|goals|learning|selfimprovement|opportunity|challenges|courage|progress|habits|positivity|effort');
+                const data = await response.json();
+                document.getElementById('quote-text').textContent = `"${data.content}"`;
+                document.getElementById('quote-author').textContent = `— ${data.author}`;
+            } catch (error) {
+                document.getElementById('quote-text').textContent = '"The best way to get started is to quit talking and begin doing."';
+                document.getElementById('quote-author').textContent = '— Walt Disney';
+            }
+        }
+
+        // Load quote when page loads
+        fetchQuote();
+        
+        // Optional: Refresh quote every 10 minutes
+        setInterval(fetchQuote, 600000);
+    </script>
 </body>
 </html>
