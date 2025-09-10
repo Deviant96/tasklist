@@ -31,13 +31,12 @@ function createWindow() {
             contextIsolation: true
         },
         autoHideMenuBar: true,
-        icon: path.join(__dirname, 'renderer/assets/app_icon.png') // Update this path
+        icon: path.join(__dirname, 'renderer/assets/app_icon.png')
     });
 
-    // Load dev tools if in development
-    // if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development') {
         win.webContents.openDevTools();
-    // }
+    }
     win.loadFile('renderer/index.html');
 }
 
