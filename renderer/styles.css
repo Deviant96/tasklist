@@ -21,6 +21,11 @@ select {
   padding: 5px;
   margin: 3px;
 }
+  
+.tasks {
+  margin-top: 24px;
+}
+
 .task {
   border-bottom: 1px solid #ccc;
   padding: 5px;
@@ -246,7 +251,6 @@ x-button[skin="recessed"][size="small"] {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-bottom: 30px;
 }
 
 .filters {
@@ -294,11 +298,63 @@ img.icon {
   color: #333;
   font-size: 14px;
 }
+.divider {
+  display: none;
+  margin-top: 2px;
+  margin-bottom: 0;
+  transition: all .3s ease;
+}
 
 
 @media screen and (max-height: 500px) {
+  .tasks {
+    margin-top: 8px;
+  }
   .add-task {
-    display: none;
+    transition: all .3s ease;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+  .add-task.expanded {
+    display: flex;
+    opacity: 1;
+    max-height: 500px;
+  }
+
+  .divider {
+    display: block;
+  }
+  .divider.expanded {
+    margin-top: 8px;
+    margin-bottom: 16px;
+  }
+  .divider > hr {
+    padding: 0;
+    margin: 4px 0;
+    height: 2px;
+    background: rgba(170, 170, 170, 0.25);
+    cursor: pointer;
+    transition: background .3s 
+ease;
+  }
+  .divider > hr:hover, .add-task.expanded + .divider > hr:hover {
+    background: rgba(0, 123, 255, 1);
+  }
+  .add-task.expanded + .divider > hr {
+    background: rgba(0, 123, 255, .5);
+  }
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 500px;
+    }
   }
 }
 

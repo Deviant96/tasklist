@@ -60,6 +60,8 @@
                 </x-button>
             </section>
 
+            <div class="divider" title="Click to expand add task"><hr /></div>
+
             <section class="tasks">
                 <div class="filters">
                     <x-input  class="search-bar" id="search" size="small">
@@ -141,6 +143,29 @@
         
         // Optional: Refresh quote every 10 minutes
         setInterval(fetchQuote, 600000);
+    </script>
+
+    <script>
+        const addTaskDivider = document.querySelector('.divider');
+        addTaskDivider.addEventListener('click', () => {
+            const addTaskSection = document.querySelector('.add-task');
+            addTaskSection.classList.toggle('expanded');
+            addTaskSection.scrollIntoView({ behavior: 'smooth' });
+            addTaskSection.focus();
+
+            if (addTaskSection.classList.contains('expanded')) {
+                addTaskDivider.title = 'Click to collapse add task';
+                addTaskDivider.classList.add('expanded');
+                addTaskSection.scrollIntoView({ behavior: 'smooth' });
+                addTaskSection.focus();
+                document.getElementById('taskTitle').focus();
+                
+            } else {
+                addTaskDivider.title = 'Click to expand add task';
+                addTaskDivider.classList.remove('expanded');
+                document.getElementById('taskTitle').blur();
+            }
+        });
     </script>
 </body>
 </html>

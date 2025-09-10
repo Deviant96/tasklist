@@ -23,8 +23,8 @@ function saveTasks(tasks) {
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 500,
-        height: 700,
+        width: 360,
+        height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
