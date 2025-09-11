@@ -312,70 +312,87 @@ function deleteTask(id) {
 }
 
 function prompt(options) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector('.prompt-dialog')) {
-            const existingDialog = document.querySelector('.prompt-dialog');
-            if (existingDialog.parentNode) {
-                existingDialog.parentNode.removeChild(existingDialog);
-            }
-        }
-        const { title, label, value, type, index, autofocus } = options;
-        const taskDiv = els.taskList.children[index];
-        
+    return new Promise((resolve) => {
+        const { title, label, value, type, autofocus } = options;
+        const prevFocus = document.activeElement;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'prompt-overlay';
+
         const dialog = document.createElement('div');
         dialog.className = 'prompt-dialog';
-        dialog.innerHTML = `<h3>${title}</h3>`;
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        dialog.innerHTML = `<h3 id="dialog-title">${title}</h3>`;
 
-        if (type === 'confirm') {
+        let input = null;
+
+        if (type !== 'confirm') {
+            const isTextarea = type === 'textarea';
+            input = document.createElement(isTextarea ? 'textarea' : 'input');
+            if (!isTextarea) {
+                input.type = type || 'text';
+            }
+            input.value = value || '';
+            input.placeholder = label || '';
+            dialog.appendChild(input);
+        } else {
             const message = document.createElement('p');
             message.textContent = label;
             dialog.appendChild(message);
-        } else {
-            const input = document.createElement('input');
-            input.type = type || 'text';
-            input.value = value || '';
-            input.placeholder = label;
-            if (autofocus) {
-                input.autofocus = true;
-            }
-            dialog.appendChild(input);
         }
 
-
+        const buttons = document.createElement('div');
         const okButton = document.createElement('button');
         okButton.textContent = 'OK';
-        okButton.onclick = () => {
-            if (type === 'confirm') {
-                resolve(true);
-            } else {
-                resolve(dialog.querySelector('input').value);
-            }
-            if (taskDiv) {
-                taskDiv.removeChild(dialog);
-            } else {
-                document.body.removeChild(dialog);
-            }
-        };
 
         const cancelButton = document.createElement('button');
         cancelButton.textContent = 'Cancel';
-        cancelButton.onclick = () => {
-            resolve(null);
-            if (taskDiv) {
-                taskDiv.removeChild(dialog);
-            } else {
-                document.body.removeChild(dialog);
-            }
+
+        buttons.appendChild(okButton);
+        buttons.appendChild(cancelButton);
+        dialog.appendChild(buttons);
+
+        function cleanup() {
+            document.body.removeChild(dialog);
+            document.body.removeChild(overlay);
+            if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+        }
+
+        okButton.onclick = () => {
+            resolve(type === 'confirm' ? true : (input ? input.value : null));
+            cleanup();
         };
 
-        dialog.appendChild(okButton);
-        dialog.appendChild(cancelButton);
-        
-        if (taskDiv) {
-            taskDiv.appendChild(dialog);
-        } else {
-            document.body.appendChild(dialog);
-        }
+        cancelButton.onclick = () => {
+            resolve(null);
+            cleanup();
+        };
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cancelButton.click();
+        });
+
+        dialog.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelButton.click();
+            } else if (e.key === 'Enter' && type !== 'textarea') {
+                e.preventDefault();
+                okButton.click();
+            }
+        });
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(dialog);
+
+        requestAnimationFrame(() => {
+            const focusTarget = input && autofocus !== false ? input : okButton;
+            focusTarget.focus();
+            if (input && autofocus) {
+                if (typeof input.select === 'function') input.select();
+            }
+        });
     });
 }
 
