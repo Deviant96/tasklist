@@ -448,6 +448,9 @@ ease;
   .subtasks header x-label:hover {
     color: #4CAF50;
   }
+  .task.completed .subtasks {
+    opacity: 0.4;
+  }
 
   #quote-text {
     display: inline-block;

@@ -115,7 +115,7 @@ function renderTasks() {
                             task.taskStatus === 'todo' ? 'To Do' : 'Unknown';
 
         const div = document.createElement('x-card');
-        div.className = 'task';
+        div.className = `task ${task.taskStatus}`;
         div.innerHTML = `
             <div class="task-main">
                 <div class="task-content ${task.taskStatus === 'completed' ? 'completed' : ''}">
