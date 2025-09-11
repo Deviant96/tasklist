@@ -1,4 +1,4 @@
-const { schedule, formatDate, toJSDate } = window.api;
+const { schedule, formatDate, toJSDate, createTask, updateTask, addSubtask, removeSubtask } = window.api;
 
 let tasks = [];
 let scheduledJobs = {};
@@ -78,6 +78,11 @@ async function load() {
     renderTasks();
 }
 
+async function refreshTasks() {
+    tasks = await window.api.loadTasks();
+    renderTasks();
+}
+
 async function save() {
     await window.api.saveTasks(tasks);
 }
@@ -121,20 +126,20 @@ function renderTasks() {
                 </div>
                 <div class="task-actions" style="gap: 5px;">
                     ${task.taskStatus !== 'completed' ? `
-                    <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask(${index})" aria-label="Delete Task">
+                    <x-button size="small" skin="recessed"  class="btn-delete-task"onclick="deleteTask('${task.id}')" aria-label="Delete Task">
                         <img class="icon" src="./assets/trash_bin.png">
                     </x-button>
 
-                    <x-button size="small" skin="recessed" onclick="addSubtask(${index})" class="btn-add-subtask">
+                    <x-button size="small" skin="recessed" onclick="createSubtask('${task.id}')" class="btn-add-subtask">
                         <img class="icon" src="./assets/plus.png">
                         <x-label>Subtask</x-label>
                     </x-button>
 
-                    <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete(${index})" aria-label="Mark task as complete">
+                    <x-button class="btn-complete-task" size="small" skin="recessed" onclick="markComplete('${task.id}')" aria-label="Mark task as complete">
                         <img class="icon" src="./assets/check.png">
                     </x-button>
                     ` : `
-                    <x-button class="btn-complete-revert-complete" size="small" skin="recessed" onclick="markUncomplete(${index})" aria-label="Revert task as uncomplete">
+                    <x-button class="btn-complete-revert-complete" size="small" skin="recessed" onclick="markUncomplete('${task.id}')" aria-label="Revert task as uncomplete">
                         <img class="icon" src="./assets/revert.png">
                     </x-button>
                     `}
@@ -148,10 +153,10 @@ function renderTasks() {
                     <x-label>Subtasks</x-label>
                 </header>
                 <div>
-                    ${task.subtasks.map((s, subIndex) => `
+                    ${task.subtasks.map((s) => `
                         <div class="subtask">
-                        - ${s}
-                        <x-button size="small" skin="recessed" class="btn-remove-subtask" onclick="removeSubtask(${index}, ${subIndex})" aria-label="Remove Subtask">
+                        - ${s.title}
+                        <x-button size="small" skin="recessed" class="btn-remove-subtask" onclick="deleteSubtask('${task.id}', '${s.id}')" aria-label="Remove Subtask">
                             <img class="icon" src="./assets/trash_bin.png">
                         </x-button>
                         </div>
@@ -186,18 +191,17 @@ function addTask() {
         els.notification.innerText = "Task title cannot be empty!";
         return;
     }
-    tasks.push(task);
-
-    scheduleReminder(task);
 
     task.createdDate = new Date().toISOString();
     task.updatedDate = new Date().toISOString();
 
+    createTask(task);
+    scheduleReminder(task);
+
     els.notification.opened = true;
     els.notification.innerText = "Task added successfully!";
 
-    save();
-    renderTasks();
+    refreshTasks();
 }
 
 els.addTaskButton.addEventListener('click', addTask);
@@ -208,74 +212,78 @@ els.taskTitle.addEventListener('keypress', (e) => {
     }
 });
 
-function addSubtask(index) {
-    let sub = '';
+function createSubtask(parentId) {
+    let subtask = {};
     prompt({
         title: 'Add Subtask',
         label: 'Subtask Title:',
         value: '',
         type: 'input',
-        index: index,
+        index: parentId,
         autofocus: true
     })
     .then((r) => {
-        console.log("Subtask input received:", r);
         if(r === null) {
-            console.log("Subtask addition cancelled.");
             return;
         } else {
-            sub = r.trim();
-
-            console.log("Adding subtask:", sub);
-
-            if (sub) {
-                tasks[index].subtasks.push(sub);
-                save();
-                renderTasks();
+            const subtaskTitle = r.trim();
+            if (!subtaskTitle) {
+                els.notification.opened = true;
+                els.notification.innerText = "Subtask title cannot be empty!";
+                return;
             }
+
+            subtask = { id: uid(), title: subtaskTitle };
+
+            addSubtask(parentId, subtask).then((res) => {
+                if (res === true) {
+                    els.notification.opened = true;
+                    els.notification.innerText = "Subtask added successfully!";
+                    refreshTasks();
+                } else {
+                    els.notification.opened = true;
+                    els.notification.innerText = "Error adding subtask!";
+                }
+            });
         }
     })
     .catch(console.error);
 }
 
-function removeSubtask(taskIndex, subtaskIndex) {
-    if (
-        tasks[taskIndex] &&
-        Array.isArray(tasks[taskIndex].subtasks) &&
-        tasks[taskIndex].subtasks[subtaskIndex] !== undefined
-    ) {
-        tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
-        els.notification.opened = true;
-        els.notification.innerText = "Subtask removed!";
-        save();
-        renderTasks();
-    } else {
-        els.notification.opened = true;
-        els.notification.innerText = "Error removing subtask!";
-    }
+function deleteSubtask(parentId, subtaskId) {
+    removeSubtask(parentId, subtaskId).then((res) => {
+        if (res === true) {
+            els.notification.opened = true;
+            els.notification.innerText = "Subtask removed successfully!";
+            refreshTasks();
+        } else {
+            els.notification.opened = true;
+            els.notification.innerText = "Error removing subtask!";
+        }
+    });
 }
 
-function markComplete(index) {
-    tasks[index].taskStatus = 'completed';
-    els.notification.opened = true;
-    if (tasks[index].taskStatus === "completed") {
-        els.notification.innerText = "Task marked as complete!";
-        save();
-        renderTasks();
-        cancelScheduledReminder(tasks[index].id);
+async function markComplete(id) {
+    const res = await updateTask(id, { taskStatus: 'completed' });
+    if (res === true) {
+        els.notification.opened = true;
+        els.notification.innerText = "Task marked as completed";
+        refreshTasks();
     } else {
+        els.notification.opened = true;
         els.notification.innerText = "Error completing task!";
     }
+    cancelScheduledReminder(id);
 }
 
-function markUncomplete(index) {
-    tasks[index].taskStatus = 'in-progress';
-    els.notification.opened = true;
-    if (tasks[index].taskStatus === "in-progress") {
-        els.notification.innerText = "Task marked as uncomplete!";
-        save();
-        renderTasks();
+async function markUncomplete(id) {
+    const res = await updateTask(id, { taskStatus: 'in-progress' });
+    if (res === true) {
+        els.notification.opened = true;
+        els.notification.innerText = "Task marked as uncomplete";
+        refreshTasks();
     } else {
+        els.notification.opened = true;
         els.notification.innerText = "Error uncompleting task!";
     }
 }
@@ -283,20 +291,20 @@ function markUncomplete(index) {
 /*
  * Delete a task by showing a confirmation dialog
  */
-function deleteTask(index) {
+function deleteTask(id) {
     prompt({
         title: 'Confirm Deletion',
         label: 'Are you sure you want to delete this task?',
         type: 'confirm',
-        index: index
+        index: id
     })
-    .then((confirmed) => {
+    .then(async (confirmed) => {
         if (confirmed) {
             els.notification.opened = true;
-            if (tasks.splice(index, 1)) {
-                els.notification.innerText = "Task removed!";
-                save();
-                renderTasks();
+            const deletionResponse = await window.api.deleteTask(id);
+            if (deletionResponse === true) {
+                els.notification.innerText = "Task deleted successfully!";
+                refreshTasks();
             }
         }
     })
@@ -340,7 +348,7 @@ function prompt(options) {
             if (type === 'confirm') {
                 resolve(true);
             } else {
-                resolve(input.value);
+                resolve(dialog.querySelector('input').value);
             }
             if (taskDiv) {
                 taskDiv.removeChild(dialog);
@@ -379,7 +387,9 @@ function filterAndSearch(tasks) {
     function matchesFilter(task) {
         const matchesStatus = statusFilter === 'all' || task.taskStatus === statusFilter;
         const matchesPriority = priorityFilter === 'all' || task.taskPriority === priorityFilter;
-        const matchesQuery = !query || (task.title + ' ' + (task.description || '')).toLowerCase().includes(query);
+        const matchesQuery = !query || 
+            task.title.toLowerCase().includes(query) || 
+            (task.subtasks && task.subtasks.some(subtask => subtask.title.toLowerCase().includes(query)));
 
         return matchesStatus && matchesPriority && matchesQuery;
     }
@@ -388,7 +398,9 @@ function filterAndSearch(tasks) {
         return taskList
             .map(task => ({
                 ...task,
-                subtasks: task.subtasks ? filterTasks(task.subtasks) : []
+                subtasks: Array.isArray(task.subtasks) && typeof task.subtasks[0] === 'string'
+                    ? task.subtasks.filter(subtask => subtask.title.toLowerCase().includes(query))
+                    : task.subtasks
             }))
             .filter(task => matchesFilter(task) || (task.subtasks && task.subtasks.length > 0));
     }

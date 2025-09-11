@@ -5,6 +5,7 @@ const schedule = require('node-schedule');
 const { DateTime } = require('luxon');
 
 const dataFilePath = path.join(__dirname, 'tasks.json');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
 
 function loadTasks() {
     if (!fs.existsSync(dataFilePath)) return [];
@@ -73,6 +74,47 @@ app.whenReady().then(() => {
         });
 
         return !!job;
+    });
+
+    ipcMain.handle('create-task', (_, task) => {
+        const tasks = loadTasks();
+        tasks.push(task);
+        return saveTasks(tasks);
+    });
+
+    ipcMain.handle('update-task', (_, id, updatedData) => {
+        const tasks = loadTasks();
+        const taskIndex = tasks.findIndex(task => task.id === id);
+        if (taskIndex === -1) return false;
+
+        tasks[taskIndex] = { ...tasks[taskIndex], ...updatedData, updatedDate: new Date().toISOString() };
+        return saveTasks(tasks);
+    });
+
+    ipcMain.handle('delete-task', (_, id) => {
+        const tasks = loadTasks();
+        const updatedTasks = tasks.filter(task => task.id !== id);
+        return saveTasks(updatedTasks);
+    });
+
+    ipcMain.handle('add-subtask', (_, parentId, subtask) => {
+        const tasks = loadTasks();
+        const parentTask = tasks.find(task => task.id === parentId);
+        
+        if (!parentTask) return false;
+        if (!Array.isArray(parentTask.subtasks)) parentTask.subtasks = [];
+
+        parentTask.subtasks.push(subtask);
+        return saveTasks(tasks);
+    });
+
+    ipcMain.handle('remove-subtask', (_, parentId, subtaskId) => {
+        const tasks = loadTasks();
+        const parentTask = tasks.find(task => task.id === parentId);
+        if (!parentTask) return false;
+
+        parentTask.subtasks = parentTask.subtasks.filter(s => s.id !== subtaskId);
+        return saveTasks(tasks);
     });
 });
 
